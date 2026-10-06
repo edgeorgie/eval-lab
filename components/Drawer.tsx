@@ -94,7 +94,7 @@ export default function Drawer({ cell, variant, testCase, others, onClose }: Pro
             return (
               <li key={a.id} className="flex items-center gap-3 rounded-xl border border-line px-3 py-2 text-sm">
                 <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] font-bold text-white ${r?.pass ? "bg-pass" : "bg-fail"}`}>
-                  {r?.pass ? "✓" : "✕"}
+                  {r?.pass ? <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 8.5l3.2 3.2L13 5" /></svg> : <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden><path d="M4 4l8 8M12 4l-8 8" /></svg>}
                 </span>
                 <span>
                   {ASSERTION_LABEL[a.type]} {a.type === "json" ? "" : <b className="font-semibold">{a.value}</b>}

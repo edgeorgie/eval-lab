@@ -5,6 +5,7 @@ import Drawer from "@/components/Drawer";
 import { CaseRow, VariantCard } from "@/components/Editors";
 import Matrix from "@/components/Matrix";
 import { SAMPLE_CASES, SAMPLE_VARIANTS, demoModel } from "@/lib/demo";
+import { actualCost, estimateRun, formatUsd } from "@/lib/cost";
 import { diffRuns, exportRun, summarize } from "@/lib/history";
 import { PROVIDERS, complete } from "@/lib/llm";
 import type { Provider } from "@/lib/llm";
@@ -68,6 +69,9 @@ export default function Home() {
   const diff = useMemo(() => (runs.length >= 2 && cells === runs[0].cells ? diffRuns(runs[1], runs[0]) : null), [runs, cells]);
   const total = variants.length * cases.length;
   const modelLabel = mode === "demo" ? "Demo model" : PROVIDERS[mode].model;
+  const priceKey = mode === "demo" ? "demo" : PROVIDERS[mode].model;
+  const estimate = useMemo(() => estimateRun(variants, cases, priceKey), [variants, cases, priceKey]);
+  const lastCost = useMemo(() => (cells.length && !running ? actualCost(variants, cases, cells, priceKey) : null), [variants, cases, cells, priceKey, running]);
 
   const model = (): ModelFn | null => {
     if (mode === "demo") return demoModel;
@@ -144,7 +148,9 @@ export default function Home() {
               {running && <span className="absolute inset-y-0 left-0 bg-brand transition-all duration-300" style={{ width: `${(progress / Math.max(1, total)) * 100}%` }} />}
               <span className="relative">{running ? `Running ${progress}/${total}  ·  Stop` : `Run ${total} checks`}</span>
             </button>
-            <p className="font-mono text-xs text-ink-soft">{modelLabel}</p>
+            <p className="font-mono text-xs text-ink-soft">
+              {modelLabel} &middot; {estimate.calls} calls &middot; est. {mode === "demo" ? "free" : formatUsd(estimate.usd)}
+            </p>
           </div>
         </header>
         {error && <p className="mt-4 rounded-2xl bg-fail-soft px-4 py-3 text-sm text-fail">{error}</p>}
@@ -168,6 +174,9 @@ export default function Home() {
             </div>
           ) : (
             <Matrix variants={variants} cases={cases} cells={cells} summary={summary} diff={diff} running={running} onOpen={setOpen} />
+          )}
+          {lastCost !== null && mode !== "demo" && (
+            <p className="mt-2 font-mono text-xs text-ink-soft">This run cost about {formatUsd(lastCost)} (estimated from text length and list prices).</p>
           )}
           {diff && (
             <p className="rise mt-4 text-sm text-ink-soft">
@@ -236,7 +245,19 @@ export default function Home() {
         </section>
       </main>
 
-      {open && openCell?.v && openCell.c && <Drawer cell={open} variant={openCell.v} testCase={openCell.c} onClose={() => setOpen(null)} />}
+      {open && openCell?.v && openCell.c && (
+        <Drawer
+          key={`${open.variantId}-${open.caseId}`}
+          cell={open}
+          variant={openCell.v}
+          testCase={openCell.c}
+          others={variants
+            .filter((v) => v.id !== open.variantId)
+            .map((v) => ({ variant: v, cell: cells.find((c) => c.variantId === v.id && c.caseId === open.caseId) }))
+            .filter((o): o is { variant: Variant; cell: Cell } => Boolean(o.cell))}
+          onClose={() => setOpen(null)}
+        />
+      )}
     </div>
   );
 }

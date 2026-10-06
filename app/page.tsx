@@ -2,25 +2,29 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Drawer from "@/components/Drawer";
+import KeyNotes from "@/components/KeyNotes";
 import { CaseRow, VariantCard } from "@/components/Editors";
 import Matrix from "@/components/Matrix";
 import { SAMPLE_CASES, SAMPLE_VARIANTS, demoModel } from "@/lib/demo";
 import { actualCost, estimateRun, formatUsd } from "@/lib/cost";
 import { diffRuns, exportRun, summarize } from "@/lib/history";
+import { clearKeys, readKeys, writeKeys } from "@/lib/keystore";
 import { PROVIDERS, complete } from "@/lib/llm";
 import type { Provider } from "@/lib/llm";
 import { runMatrix } from "@/lib/runner";
+import { parseStoredState } from "@/lib/state";
 import type { ModelFn } from "@/lib/runner";
 import type { Cell, Run, TestCase, Variant } from "@/lib/types";
 
 type Mode = "demo" | Provider;
 const STORE = "eval-lab.state.v1";
+const KEYS = "eval-lab.keys";
+const HOSTS: Record<Provider, string> = { anthropic: "api.anthropic.com", openai: "api.openai.com" };
 
 interface Saved {
   variants: Variant[];
   cases: TestCase[];
   mode: Mode;
-  keys: Partial<Record<Provider, string>>;
   runs: Run[];
 }
 
@@ -38,6 +42,7 @@ export default function Home() {
   const [open, setOpen] = useState<Cell | null>(null);
   const [error, setError] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const [remember, setRemember] = useState(false);
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -45,14 +50,23 @@ export default function Home() {
       try {
         const raw = localStorage.getItem(STORE);
         if (raw) {
-          const s = JSON.parse(raw) as Saved;
-          setVariants(s.variants);
-          setCases(s.cases);
-          setMode(s.mode);
-          setKeys(s.keys ?? {});
-          setRuns(s.runs ?? []);
-          if (s.runs?.length) setCells(s.runs[0].cells);
+          const legacy = (JSON.parse(raw) as { keys?: Partial<Record<Provider, string>> }).keys;
+          if (legacy) {
+            if (Object.values(legacy).some(Boolean)) sessionStorage.setItem(KEYS, JSON.stringify(legacy));
+            localStorage.setItem(STORE, JSON.stringify({ ...JSON.parse(raw), keys: undefined }));
+          }
+          const s = parseStoredState(raw);
+          if (s) {
+            setVariants(s.variants);
+            setCases(s.cases);
+            setMode(s.mode === "anthropic" || s.mode === "openai" ? s.mode : "demo");
+            setRuns(s.runs);
+            if (s.runs.length) setCells(s.runs[0].cells);
+          }
         }
+        const stored = readKeys<Partial<Record<Provider, string>>>(KEYS, sessionStorage, localStorage);
+        if (stored.value) setKeys(stored.value);
+        setRemember(stored.remember);
       } catch {}
       setHydrated(true);
     });
@@ -61,9 +75,17 @@ export default function Home() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem(STORE, JSON.stringify({ variants, cases, mode, keys, runs: runs.slice(0, 5) } satisfies Saved));
+      localStorage.setItem(STORE, JSON.stringify({ variants, cases, mode, runs: runs.slice(0, 5) } satisfies Saved));
     } catch {}
-  }, [variants, cases, mode, keys, runs, hydrated]);
+  }, [variants, cases, mode, runs, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      if (Object.values(keys).some(Boolean)) writeKeys(KEYS, keys, remember, sessionStorage, localStorage);
+      else clearKeys(KEYS, sessionStorage, localStorage);
+    } catch {}
+  }, [keys, remember, hydrated]);
 
   const summary = useMemo(() => summarize(cells, variants.map((v) => v.id)), [cells, variants]);
   const diff = useMemo(() => (runs.length >= 2 && cells === runs[0].cells ? diffRuns(runs[1], runs[0]) : null), [runs, cells]);
@@ -71,7 +93,10 @@ export default function Home() {
   const modelLabel = mode === "demo" ? "Demo model" : PROVIDERS[mode].model;
   const priceKey = mode === "demo" ? "demo" : PROVIDERS[mode].model;
   const estimate = useMemo(() => estimateRun(variants, cases, priceKey), [variants, cases, priceKey]);
-  const lastCost = useMemo(() => (cells.length && !running ? actualCost(variants, cases, cells, priceKey) : null), [variants, cases, cells, priceKey, running]);
+  const lastCost = useMemo(() => {
+    const answered = cells.filter((c) => !c.error);
+    return answered.length && !running ? actualCost(variants, cases, answered, priceKey) : null;
+  }, [variants, cases, cells, priceKey, running]);
 
   const model = (): ModelFn | null => {
     if (mode === "demo") return demoModel;
@@ -103,7 +128,11 @@ export default function Home() {
           setProgress(done);
         },
       });
-      if (!controller.signal.aborted) {
+      const failed = result.filter((c) => c.error);
+      if (!controller.signal.aborted && failed.length > 0) {
+        setCells(result);
+        setError(`${failed.length} of ${result.length} calls failed (${failed[0].error}). This run was not saved or compared.`);
+      } else if (!controller.signal.aborted) {
         const newRun: Run = { id: uid(), createdAt: new Date().toISOString(), model: modelLabel, variants, cases, cells: result };
         setRuns((r) => [newRun, ...r]);
         setCells(newRun.cells);
@@ -239,7 +268,10 @@ export default function Home() {
                 placeholder={`${PROVIDERS[mode].label} API key`}
                 className="w-full rounded-xl border border-line bg-canvas/60 px-3 py-2 text-sm outline-none focus:border-brand focus:shadow-[0_0_0_4px_var(--brand-soft)]"
               />
-              <p className="mt-2 text-xs text-ink-soft">Stays in this browser. Requests go straight to the provider. A run of {total} checks uses about {total} model calls, plus one per judge check.</p>
+              <div className="mt-2">
+                <KeyNotes host={HOSTS[mode]} remember={remember} hasKey={Boolean(keys[mode])} onRemember={setRemember} onClear={() => setKeys((k) => ({ ...k, [mode]: "" }))} />
+              </div>
+              <p className="mt-2 text-xs text-ink-soft">A run of {total} checks uses about {total} model calls, plus one per judge check.</p>
             </div>
           )}
         </section>

@@ -14,6 +14,7 @@ export function evaluate(a: Assertion, output: string): AssertionResult {
     case "not_contains":
       return done(!text.includes(a.value.toLowerCase()), `does not contain "${a.value}"`);
     case "regex":
+      if (a.value.length > 300 || /\([^)]*[+*][^)]*\)[+*{]/.test(a.value)) return done(false, `regex /${a.value}/ is too costly to run (nested quantifiers or very long)`);
       try {
         return done(new RegExp(a.value, "i").test(output), `matches /${a.value}/`);
       } catch {

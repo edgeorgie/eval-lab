@@ -9,6 +9,8 @@ Pit prompt variants against test cases, see which one wins, and catch what break
 - Run the full matrix: every variant against every case, with bounded concurrency and live progress.
 - Read the results as a grid with animated pass rates, latency, and a best-variant badge. Click any cell for the raw output and per-check detail.
 - Runs are saved locally. Each new run is compared with the previous one (matched by variant name and case input) and flags regressions and fixes.
+- Compare any two variants on the same case side by side, with a word-level diff of their outputs.
+- See an estimated cost before you run and after (rough list prices, so treat it as an estimate).
 - Export a run as JSON.
 
 ## Models

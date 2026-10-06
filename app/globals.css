@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  --canvas: #f6f5f1;
+  --surface: #ffffff;
+  --ink: #101216;
+  --ink-soft: #5d6370;
+  --line: rgba(16, 18, 22, 0.09);
+  --brand: #3b4cff;
+  --brand-soft: #e9ebff;
+  --pass: #0f9d6b;
+  --pass-soft: #dcf5ea;
+  --fail: #e5484d;
+  --fail-soft: #fde4e4;
+  --warn: #f5a524;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-pass: var(--pass);
+  --color-pass-soft: var(--pass-soft);
+  --color-fail: var(--fail);
+  --color-fail-soft: var(--fail-soft);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 88;
+  letter-spacing: -0.03em;
+}
+
+/* organic background that drifts slowly */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(60px, 30px, 0) scale(1.15);
+  }
+  100% {
+    transform: translate3d(-40px, 70px, 0) scale(0.95);
+  }
+}
+
+.pop {
+  animation: pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(100deg, transparent 20%, rgba(59, 76, 255, 0.18) 50%, transparent 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.slide-in {
+  animation: slide-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.ring-fill {
+  transition: stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1), stroke 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob,
+  .pop,
+  .rise,
+  .shimmer,
+  .slide-in {
+    animation: none;
+  }
+}

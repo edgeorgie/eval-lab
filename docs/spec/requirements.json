@@ -1,0 +1,111 @@
+[
+  {
+    "id": "FR-1",
+    "title": "Deterministic checks",
+    "status": "Verified",
+    "acceptance": [
+      "Given an output, then contains, not contains, regex, valid JSON and max words evaluate to pass or fail with a detail."
+    ],
+    "implementation": [
+      "lib/assert.ts"
+    ],
+    "tests": [
+      "tests/lab.test.ts"
+    ],
+    "evidence": "PR 1: assertion tests."
+  },
+  {
+    "id": "FR-2",
+    "title": "Matrix runner",
+    "status": "Verified",
+    "acceptance": [
+      "Given variants and cases, then every cell runs with bounded concurrency, progress is reported, and a failing model call becomes an errored cell."
+    ],
+    "implementation": [
+      "lib/runner.ts"
+    ],
+    "tests": [
+      "tests/lab.test.ts"
+    ],
+    "evidence": "PR 1: runner and error tests."
+  },
+  {
+    "id": "FR-3",
+    "title": "LLM judge checks",
+    "status": "Verified",
+    "acceptance": [
+      "Given a judge criterion, then a model call answers yes or no and the result is recorded as a check."
+    ],
+    "implementation": [
+      "lib/assert.ts",
+      "lib/runner.ts"
+    ],
+    "tests": [
+      "tests/lab.test.ts"
+    ],
+    "evidence": "PR 1: judge parsing and demo-model run."
+  },
+  {
+    "id": "FR-4",
+    "title": "Run history and regressions",
+    "status": "Verified",
+    "acceptance": [
+      "Given two runs, then cells matched by variant name and case input are flagged as regressions or fixes."
+    ],
+    "implementation": [
+      "lib/history.ts",
+      "app/page.tsx"
+    ],
+    "tests": [
+      "tests/lab.test.ts"
+    ],
+    "evidence": "PR 1: diff test; in Chrome, breaking the winning variant flagged four regressions."
+  },
+  {
+    "id": "FR-5",
+    "title": "Side by side output diff",
+    "status": "Verified",
+    "acceptance": [
+      "Given two variants on one case, then a word-level diff and similarity percentage are shown."
+    ],
+    "implementation": [
+      "lib/diff.ts",
+      "components/Drawer.tsx"
+    ],
+    "tests": [
+      "tests/diffcost.test.ts"
+    ],
+    "evidence": "PR 2: diff tests; verified in Chrome."
+  },
+  {
+    "id": "FR-6",
+    "title": "Cost estimate",
+    "status": "Verified",
+    "acceptance": [
+      "Given a suite and a model, then the number of calls and an estimated cost are shown before and after a run, using rough list prices."
+    ],
+    "implementation": [
+      "lib/cost.ts",
+      "app/page.tsx"
+    ],
+    "tests": [
+      "tests/diffcost.test.ts"
+    ],
+    "evidence": "PR 2: estimate tests. Prices are rough and must be rechecked."
+  },
+  {
+    "id": "FR-7",
+    "title": "Offline demo model",
+    "status": "Verified",
+    "acceptance": [
+      "Given the demo mode, then the sample suite runs with no key and produces differing pass rates across variants."
+    ],
+    "implementation": [
+      "lib/demo.ts"
+    ],
+    "tests": [
+      "tests/lab.test.ts"
+    ],
+    "evidence": "PR 1: sample run scored 0, 100 and 50 percent in Chrome."
+  }
+]

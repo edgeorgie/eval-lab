@@ -46,6 +46,7 @@ Status: Verified.
 Status: Verified.
 
 - Given two runs, then cells matched by variant name and case input are flagged as regressions or fixes.
+- Given a run in which any call failed, then it is shown with the failure message but is not saved, not compared, has no BEST badge and no cost line.
 
 ### FR-5 Side by side output diff
 
@@ -64,6 +65,25 @@ Status: Verified.
 Status: Verified.
 
 - Given the demo mode, then the sample suite runs with no key and produces differing pass rates across variants.
+
+### FR-8 Provider keys kept in the session by default
+
+Status: Verified.
+
+- Given a provider key, then it is kept in sessionStorage for the tab by default, kept on the device only when the user ticks "Remember on this device", and removable with "Clear key"; keys are never part of the saved lab state.
+- Given saved lab state with an unexpected shape or oversized fields, then it is ignored instead of applied.
+
+### FR-9 Costly regex assertions are refused
+
+Status: Verified.
+
+- Given a regex assertion with nested quantifiers or more than 300 characters, then it fails with a clear message instead of running.
+
+### FR-10 Content Security Policy on the static export
+
+Status: Verified.
+
+- Given the Pages export, then every page carries a Content-Security-Policy meta tag that allows scripts only from the site and from the hashes of its inline scripts, and connections only to the site, api.anthropic.com and api.openai.com.
 
 ## Open risks
 

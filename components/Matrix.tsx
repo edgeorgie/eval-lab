@@ -18,6 +18,7 @@ export default function Matrix({ variants, cases, cells, summary, diff, running,
   const find = (v: string, c: string) => cells.find((x) => x.variantId === v && x.caseId === c);
   const flagged = (v: string, c: string) => diff?.regressions.some((d) => d.variantId === v && d.caseId === c);
   const fixed = (v: string, c: string) => diff?.fixes.some((d) => d.variantId === v && d.caseId === c);
+  const hasErrors = cells.some((c) => c.error);
   const best = summary.length ? Math.max(...summary.map((s) => s.rate)) : 0;
 
   return (
@@ -26,7 +27,7 @@ export default function Matrix({ variants, cases, cells, summary, diff, running,
         <div />
         {variants.map((v, i) => {
           const s = summary.find((x) => x.variantId === v.id);
-          const winner = s && s.total > 0 && s.rate === best && summary.filter((x) => x.rate === best).length === 1;
+          const winner = s && !hasErrors && s.rate > 0 && s.rate === best && summary.filter((x) => x.rate === best).length === 1;
           return (
             <div key={v.id} className="rise flex flex-col items-center gap-2 rounded-3xl border border-line bg-surface px-3 py-4 text-center" style={{ animationDelay: `${i * 70}ms` }}>
               <Ring value={s?.rate ?? 0} label={`${v.name} pass rate`} />

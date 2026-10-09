@@ -2,6 +2,16 @@
 
 Compare prompt variants against test cases and catch regressions between runs.
 
+> This exists as direct evidence for PostHog's Product Engineer posting, which
+> explicitly asks: *"Have you built anything agents use? ...an API an agent
+> can drive, an MCP server, evals, docs written for a machine."* This repo
+> ships as an **installable CLI + reusable GitHub Action**, dogfooded in this
+> repo's own CI (and in [triage-desk](https://github.com/edgeorgie/triage-desk)'s
+> CI, evaluating that project's real heuristic triage logic) — see
+> [CI usage](#ci-usage-catch-prompt-regressions-in-your-pipeline) for the real
+> pass/fail run evidence and [BENCHMARKS.md](BENCHMARKS.md) for the measured
+> 100% pass rate / 20.21ms avg latency / $0 cost benchmark.
+
 - Prompt variants against test cases with deterministic checks and an LLM judge
 - Animated results matrix with pass rates and a best-variant badge
 - Regression detection between runs

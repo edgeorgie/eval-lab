@@ -4,6 +4,7 @@ import { evaluate } from "../src/lib/assert.mjs";
 import { runMatrix } from "../src/lib/runner.mjs";
 import { diffRuns, summarize } from "../src/lib/history.mjs";
 import { demoModel } from "../src/lib/demo.mjs";
+import { execModel } from "../bin/eval-lab.mjs";
 
 test("evaluate: contains / not_contains / max_words / regex / json", () => {
   assert.equal(evaluate({ id: "a", type: "contains", value: "refund" }, "we issue a refund").pass, true);
@@ -46,4 +47,15 @@ test("summarize computes pass rate per variant", () => {
   assert.equal(s.passed, 1);
   assert.equal(s.total, 2);
   assert.equal(s.rate, 0.5);
+});
+
+test("execModel runs a local command as the model, passing system/prompt via stdin JSON", async () => {
+  const fn = execModel(`node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const o=JSON.parse(d);console.log('got:'+o.prompt)})"`);
+  const out = await fn(null, "hello from a test");
+  assert.equal(out, "got:hello from a test");
+});
+
+test("execModel rejects when the command exits non-zero", async () => {
+  const fn = execModel(`node -e "process.stdin.resume();process.exit(1)"`);
+  await assert.rejects(fn(null, "x"));
 });

@@ -1,13 +1,37 @@
 #!/usr/bin/env node
 // eval-lab CLI — runs a prompt-variant eval suite from a JSON config and
 // exits non-zero on failed cells or detected regressions, so CI can gate on it.
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, realpath } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { spawn } from "node:child_process";
 import { runMatrix } from "../src/lib/runner.mjs";
 import { summarize, diffRuns } from "../src/lib/history.mjs";
 import { demoModel } from "../src/lib/demo.mjs";
 import { complete, PROVIDERS } from "../src/lib/llm.mjs";
+
+/** Runs an arbitrary local command as the "model": the eval case's rendered prompt is written
+ * to the child's stdin as JSON `{ system, prompt }`, and the child's trimmed stdout is used as
+ * the model output. Lets eval-lab exercise a repo's OWN deterministic/heuristic logic (e.g. a
+ * classifier script) as a real eval subject, with zero API key and zero network calls. */
+export function execModel(command) {
+  return (system, prompt) =>
+    new Promise((resolve, reject) => {
+      const child = spawn(command, { shell: true });
+      let out = "";
+      let err = "";
+      child.stdout.on("data", (d) => (out += d));
+      child.stderr.on("data", (d) => (err += d));
+      child.on("error", reject);
+      child.on("close", (code) => {
+        if (code !== 0) return reject(new Error(`exec model command exited ${code}: ${err.trim() || "(no stderr)"}`));
+        resolve(out.trim());
+      });
+      child.stdin.write(JSON.stringify({ system: system ?? null, prompt }));
+      child.stdin.end();
+    });
+}
 
 function parseArgs(argv) {
   const args = { _: [] };
@@ -29,8 +53,12 @@ function parseArgs(argv) {
   return args;
 }
 
-function resolveModel(name) {
+function resolveModel(name, execCmd) {
   if (!name || name === "demo") return { fn: demoModel, label: "Demo model (offline, no API key)" };
+  if (name === "exec") {
+    if (!execCmd) throw new Error('--model exec requires --exec-cmd "<command>" (reads {"system","prompt"} JSON on stdin, writes output to stdout).');
+    return { fn: execModel(execCmd), label: `exec: ${execCmd}` };
+  }
   if (name === "anthropic" || name === "openai") {
     const envVar = PROVIDERS[name].envVar;
     const key = process.env[envVar];
@@ -87,7 +115,9 @@ Usage:
 
 Options:
   --config <path>     Path to the eval config JSON (required)
-  --model <name>      "demo" (default, no API key), "anthropic" or "openai"
+  --model <name>      "demo" (default, no API key), "anthropic", "openai", or "exec"
+  --exec-cmd <cmd>    Shell command to run as the model when --model exec (receives
+                      {"system","prompt"} JSON on stdin, must print output to stdout)
   --baseline <path>   Path to a previous run's JSON output; fails on regression
   --out <path>        Write the run result JSON to this path
   --fail-on-regression  Exit non-zero if any case regressed vs --baseline (default: true)
@@ -104,7 +134,8 @@ Options:
 
   const config = await loadConfig(configPath);
   const modelName = typeof args.model === "string" ? args.model : config.model ?? "demo";
-  const { fn: model, label } = resolveModel(modelName);
+  const execCmd = typeof args["exec-cmd"] === "string" ? args["exec-cmd"] : config.execCmd;
+  const { fn: model, label } = resolveModel(modelName, execCmd);
 
   console.log(`eval-lab: running ${config.variants.length} variant(s) × ${config.cases.length} case(s) with ${label}`);
 
@@ -153,7 +184,19 @@ Options:
   }
 }
 
-main().catch((err) => {
-  console.error(`eval-lab: ${err.message}`);
-  process.exitCode = 1;
-});
+async function isMainModule() {
+  if (!process.argv[1]) return false;
+  try {
+    const [a, b] = await Promise.all([realpath(fileURLToPath(import.meta.url)), realpath(process.argv[1])]);
+    return a === b;
+  } catch {
+    return false;
+  }
+}
+
+if (await isMainModule()) {
+  main().catch((err) => {
+    console.error(`eval-lab: ${err.message}`);
+    process.exitCode = 1;
+  });
+}

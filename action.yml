@@ -1,0 +1,77 @@
+name: "eval-lab"
+description: "Run prompt-variant LLM evals (deterministic checks + judge) and fail CI on regressions. Works offline with the zero-API-key demo model."
+author: "edgeorgie"
+branding:
+  icon: "check-circle"
+  color: "blue"
+
+inputs:
+  config:
+    description: "Path to the eval config JSON (variants + test cases)."
+    required: true
+    default: "eval.config.json"
+  model:
+    description: 'Model to run: "demo" (offline, no API key, default), "anthropic" or "openai".'
+    required: false
+    default: "demo"
+  baseline:
+    description: "Path to a previous run's JSON output to diff against for regressions. Optional."
+    required: false
+    default: ""
+  out:
+    description: "Path to write this run's JSON output, so a later step/job can use it as the next baseline."
+    required: false
+    default: "eval-lab-run.json"
+  fail-on-regression:
+    description: "Fail the action if any case that passed in --baseline now fails."
+    required: false
+    default: "true"
+  anthropic-api-key:
+    description: "Anthropic API key. Only needed when model=anthropic."
+    required: false
+    default: ""
+  openai-api-key:
+    description: "OpenAI API key. Only needed when model=openai."
+    required: false
+    default: ""
+
+outputs:
+  passed:
+    description: "\"true\" if every cell passed and there were no regressions, else \"false\"."
+    value: ${{ steps.run.outputs.passed }}
+  run-file:
+    description: "Path to the JSON run output file."
+    value: ${{ inputs.out }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+
+    - name: Install eval-lab CLI
+      shell: bash
+      run: npm install --no-save eval-lab@latest || npm install --no-save ${{ github.action_path }}/cli
+
+    - name: Run eval-lab
+      id: run
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+      run: |
+        set +e
+        ARGS=(run --config "${{ inputs.config }}" --model "${{ inputs.model }}" --out "${{ inputs.out }}" --fail-on-regression "${{ inputs.fail-on-regression }}")
+        if [ -n "${{ inputs.baseline }}" ]; then
+          ARGS+=(--baseline "${{ inputs.baseline }}")
+        fi
+        npx --no-install eval-lab "${ARGS[@]}"
+        code=$?
+        if [ $code -eq 0 ]; then
+          echo "passed=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "passed=false" >> "$GITHUB_OUTPUT"
+        fi
+        exit $code

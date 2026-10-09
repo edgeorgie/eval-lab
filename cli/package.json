@@ -1,0 +1,43 @@
+{
+  "name": "eval-lab",
+  "version": "0.1.0",
+  "description": "CLI and GitHub Action for prompt-variant evals with deterministic checks, an LLM judge, and regression detection between runs. Runs offline with a zero-API-key demo model for CI.",
+  "type": "module",
+  "bin": {
+    "eval-lab": "bin/eval-lab.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo": "node bin/eval-lab.mjs run --config examples/eval.config.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "llm",
+    "eval",
+    "evals",
+    "prompt-engineering",
+    "ci",
+    "github-action",
+    "regression-testing",
+    "llm-judge"
+  ],
+  "license": "MIT",
+  "author": "edgeorgie",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edgeorgie/eval-lab.git",
+    "directory": "cli"
+  },
+  "homepage": "https://github.com/edgeorgie/eval-lab#readme",
+  "bugs": {
+    "url": "https://github.com/edgeorgie/eval-lab/issues"
+  }
+}

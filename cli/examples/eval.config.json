@@ -1,0 +1,39 @@
+{
+  "model": "demo",
+  "variants": [
+    { "id": "v1", "name": "Baseline", "prompt": "Reply to this customer message:\n{{input}}" },
+    { "id": "v2", "name": "Friendly and concise", "prompt": "You are a friendly support agent. Be concise.\nReply to this customer message:\n{{input}}" },
+    { "id": "v3", "name": "Formal", "prompt": "You are a formal support agent.\nReply to this customer message:\n{{input}}" }
+  ],
+  "cases": [
+    {
+      "id": "c1",
+      "input": "My order arrived broken and I want a refund.",
+      "assertions": [
+        { "id": "a1", "type": "contains", "value": "refund" },
+        { "id": "a2", "type": "max_words", "value": "40" }
+      ]
+    },
+    {
+      "id": "c2",
+      "input": "How do I reset my password?",
+      "assertions": [
+        { "id": "a3", "type": "contains", "value": "reset" },
+        { "id": "a4", "type": "max_words", "value": "40" }
+      ]
+    },
+    {
+      "id": "c3",
+      "input": "You charged me twice!!",
+      "assertions": [
+        { "id": "a5", "type": "judge", "value": "acknowledges the customer's frustration" },
+        { "id": "a6", "type": "not_contains", "value": "we will look into your request" }
+      ]
+    },
+    {
+      "id": "c4",
+      "input": "Cancel my subscription now.",
+      "assertions": [{ "id": "a7", "type": "contains", "value": "cancel" }]
+    }
+  ]
+}

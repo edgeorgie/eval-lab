@@ -1,0 +1,21 @@
+{
+  "model": "demo",
+  "variants": [
+    { "id": "v1", "name": "Support Agent", "prompt": "You are a friendly support agent.\nReply to this customer message:\n{{input}}" }
+  ],
+  "cases": [
+    {
+      "id": "c1",
+      "input": "My order arrived broken and I want a refund.",
+      "assertions": [
+        { "id": "a1", "type": "contains", "value": "refund" },
+        { "id": "a2", "type": "max_words", "value": "40" }
+      ]
+    },
+    {
+      "id": "c4",
+      "input": "Cancel my subscription now.",
+      "assertions": [{ "id": "a7", "type": "contains", "value": "cancel" }]
+    }
+  ]
+}

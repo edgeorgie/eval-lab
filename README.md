@@ -135,10 +135,18 @@ I built the standalone CLI + Action, see [PR #21](https://github.com/edgeorgie/e
 
 ## By the numbers
 
-- 100% pass rate — 24/24 cells, 3 separate runs of the 12-case x 2-variant benchmark ([BENCHMARKS.md](BENCHMARKS.md))
+**Read these as a plumbing/regression smoke test, not a model-quality eval.** The
+`demo` model used below is deterministic string-matching code with zero LLM
+inference — it proves the CLI, Action, and regression-diff logic execute
+correctly end to end, not that the eval methodology catches real model
+regressions. The one place that would exercise actual model judgment (the
+LLM-judge check type) isn't included in these numbers, because no API key is
+configured in this environment.
+
+- 100% pass rate — 24/24 cells, 3 separate runs of the 12-case x 2-variant benchmark, **offline deterministic demo model** ([BENCHMARKS.md](BENCHMARKS.md))
 - 20.21ms — average latency per cell (offline demo model, min 10/11ms, max 35/36ms)
 - ~255–259ms — wall-clock time for a full 24-cell benchmark run
-- $0 — cost per run (offline demo model, zero API calls)
+- $0 — cost per run (offline demo model, zero API calls — this is the expected cost of running zero inference, not evidence of a cheap real eval)
 - 7/7 — local unit tests passing (`node --test cli/test/*.test.mjs`)
 
 ## Deployment

@@ -2,13 +2,10 @@
 
 Compare prompt variants against test cases and catch regressions between runs.
 
-> This exists as direct evidence for PostHog's Product Engineer posting, which
-> explicitly asks: *"Have you built anything agents use? ...an API an agent
-> can drive, an MCP server, evals, docs written for a machine."* This repo
-> ships as an **installable CLI + reusable GitHub Action**, dogfooded in this
+> Ships as an **installable CLI + reusable GitHub Action**, dogfooded in this
 > repo's own CI (and in [triage-desk](https://github.com/edgeorgie/triage-desk)'s
-> CI, evaluating that project's real heuristic triage logic) — see
-> [CI usage](#ci-usage-catch-prompt-regressions-in-your-pipeline) for the real
+> CI, evaluating that project's heuristic triage logic) — see
+> [CI usage](#ci-usage-catch-prompt-regressions-in-your-pipeline) for the
 > pass/fail run evidence and [BENCHMARKS.md](BENCHMARKS.md) for the measured
 > 100% pass rate / 20.21ms avg latency / $0 cost benchmark.
 
@@ -129,7 +126,7 @@ fails the build if any case fails or regresses versus the baseline.
 This repo dogfoods it in [`.github/workflows/eval.yml`](.github/workflows/eval.yml):
 one job runs a passing baseline prompt, then a deliberately regressed prompt
 variant against the same baseline, and asserts the action actually failed —
-real pass/fail output from the offline demo model, not a mock. See the
+pass/fail output from the offline demo model. See the
 [CLI README](cli/README.md) for the config format and flags, and
 [Actions runs](https://github.com/edgeorgie/eval-lab/actions/workflows/eval.yml)
 for evidence it executes in CI.

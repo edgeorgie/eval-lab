@@ -1,0 +1,33 @@
+{
+  "model": "demo",
+  "variants": [
+    { "id": "v1", "name": "Friendly concise", "prompt": "You are a friendly support agent. Be concise.\nReply to this customer message:\n{{input}}" },
+    { "id": "v2", "name": "Formal", "prompt": "You are a formal support agent.\nReply to this customer message:\n{{input}}" }
+  ],
+  "cases": [
+    { "id": "c1-refund-broken", "input": "My order arrived broken and I need a refund please.",
+      "assertions": [ { "id": "a1", "type": "contains", "value": "refund" }, { "id": "a2", "type": "max_words", "value": "60" } ] },
+    { "id": "c2-password-reset", "input": "I forgot my password and cannot log in to my account.",
+      "assertions": [ { "id": "a3", "type": "contains", "value": "reset" }, { "id": "a4", "type": "max_words", "value": "60" } ] },
+    { "id": "c3-double-charge", "input": "I was charged twice for the same order this month.",
+      "assertions": [ { "id": "a5", "type": "contains", "value": "sorry" }, { "id": "a6", "type": "max_words", "value": "60" }, { "id": "a7", "type": "judge", "value": "acknowledges the customer's frustration" } ] },
+    { "id": "c4-cancel-sub", "input": "Please cancel my subscription immediately, I no longer need it.",
+      "assertions": [ { "id": "a8", "type": "contains", "value": "cancel" }, { "id": "a9", "type": "max_words", "value": "60" } ] },
+    { "id": "c5-hours-question", "input": "What are your business hours on weekends?",
+      "assertions": [ { "id": "a10", "type": "contains", "value": "thanks for the details" }, { "id": "a11", "type": "max_words", "value": "60" } ] },
+    { "id": "c6-app-crash", "input": "The app keeps crashing every time I open it on my phone.",
+      "assertions": [ { "id": "a12", "type": "contains", "value": "thanks for the details" }, { "id": "a13", "type": "max_words", "value": "60" } ] },
+    { "id": "c7-positive-feedback", "input": "I love the new feature, just wanted to say thanks!",
+      "assertions": [ { "id": "a14", "type": "contains", "value": "thanks for the details" }, { "id": "a15", "type": "max_words", "value": "60" } ] },
+    { "id": "c8-refund-repeat", "input": "My package arrived broken, this is the second time, I want a refund now.",
+      "assertions": [ { "id": "a16", "type": "contains", "value": "refund" }, { "id": "a17", "type": "max_words", "value": "60" } ] },
+    { "id": "c9-billing-address", "input": "How do I update my billing address on file?",
+      "assertions": [ { "id": "a18", "type": "contains", "value": "thanks for the details" }, { "id": "a19", "type": "max_words", "value": "60" } ] },
+    { "id": "c10-double-charge-2", "input": "You charged me twice last week and again today, please fix this.",
+      "assertions": [ { "id": "a20", "type": "contains", "value": "sorry" }, { "id": "a21", "type": "max_words", "value": "60" }, { "id": "a22", "type": "judge", "value": "acknowledges the customer's frustration" } ] },
+    { "id": "c11-cancel-refund", "input": "I would like to cancel my plan and get a partial refund.",
+      "assertions": [ { "id": "a23", "type": "contains", "value": "refund" }, { "id": "a24", "type": "max_words", "value": "60" } ] },
+    { "id": "c12-password-no-email", "input": "Is there a way to reset my password without email access?",
+      "assertions": [ { "id": "a25", "type": "contains", "value": "reset" }, { "id": "a26", "type": "max_words", "value": "60" } ] }
+  ]
+}

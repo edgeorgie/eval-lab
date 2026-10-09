@@ -124,6 +124,16 @@ real pass/fail output from the offline demo model, not a mock. See the
 [Actions runs](https://github.com/edgeorgie/eval-lab/actions/workflows/eval.yml)
 for evidence it executes in CI.
 
+I built the standalone CLI + Action, see [PR #21](https://github.com/edgeorgie/eval-lab/pull/21). I added `--model exec` so eval-lab can grade a repo's own logic (used to gate [triage-desk](https://github.com/edgeorgie/triage-desk)'s CI), see [PR #22](https://github.com/edgeorgie/eval-lab/pull/22).
+
+## By the numbers
+
+- 100% pass rate — 24/24 cells, 3 separate runs of the 12-case x 2-variant benchmark ([BENCHMARKS.md](BENCHMARKS.md))
+- 20.21ms — average latency per cell (offline demo model, min 10/11ms, max 35/36ms)
+- ~255–259ms — wall-clock time for a full 24-cell benchmark run
+- $0 — cost per run (offline demo model, zero API calls)
+- 7/7 — local unit tests passing (`node --test cli/test/*.test.mjs`)
+
 ## Deployment
 
 The app is fully client-side, so it can be hosted as static files.

@@ -34,6 +34,8 @@ Open http://localhost:3000. Requires Node 22 or newer.
 2. Press Run. The demo model needs no key.
 3. Click a cell for details, compare two variants, or export the run.
 
+> **Sandboxed/CI environments with `NODE_ENV=production` set:** `npm install` will silently skip devDependencies (including `typescript`), causing `npm run typecheck`/`npm run build` to fail with missing-module errors that look like real bugs but aren't. Fix: `unset NODE_ENV && npm install --include=dev` before running either command.
+
 ## Configuration
 
 No environment variables. API keys are entered in the app and stay in the browser.

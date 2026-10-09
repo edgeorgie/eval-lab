@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // eval-lab CLI — runs a prompt-variant eval suite from a JSON config and
 // exits non-zero on failed cells or detected regressions, so CI can gate on it.
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, realpath } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { runMatrix } from "../src/lib/runner.mjs";
 import { summarize, diffRuns } from "../src/lib/history.mjs";
@@ -183,7 +184,17 @@ Options:
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+async function isMainModule() {
+  if (!process.argv[1]) return false;
+  try {
+    const [a, b] = await Promise.all([realpath(fileURLToPath(import.meta.url)), realpath(process.argv[1])]);
+    return a === b;
+  } catch {
+    return false;
+  }
+}
+
+if (await isMainModule()) {
   main().catch((err) => {
     console.error(`eval-lab: ${err.message}`);
     process.exitCode = 1;

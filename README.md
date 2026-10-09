@@ -91,6 +91,39 @@ Motion, components and rationale: [docs/design-system.md](docs/design-system.md)
 - Price estimates use rough list prices and must be rechecked.
 - Up to four variants.
 
+## CI usage: catch prompt regressions in your pipeline
+
+eval-lab also ships as a standalone CLI (`cli/`) and a reusable GitHub Action
+(`action.yml`), so any repo can gate its CI on prompt-variant evals — using
+the same engine as this app, including the offline demo model (no API key,
+so it's free to run on every PR).
+
+Add a step like this to your workflow:
+
+```yaml
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: edgeorgie/eval-lab@main
+        with:
+          config: eval.config.json   # your variants + test cases
+          model: demo                # or "anthropic" / "openai" with an API key input
+          baseline: baseline.run.json  # optional: fail the build on regression
+```
+
+The action installs the CLI, runs the suite, writes a JSON run file, and
+fails the build if any case fails or regresses versus the baseline.
+
+This repo dogfoods it in [`.github/workflows/eval.yml`](.github/workflows/eval.yml):
+one job runs a passing baseline prompt, then a deliberately regressed prompt
+variant against the same baseline, and asserts the action actually failed —
+real pass/fail output from the offline demo model, not a mock. See the
+[CLI README](cli/README.md) for the config format and flags, and
+[Actions runs](https://github.com/edgeorgie/eval-lab/actions/workflows/eval.yml)
+for evidence it executes in CI.
+
 ## Deployment
 
 The app is fully client-side, so it can be hosted as static files.

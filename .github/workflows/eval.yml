@@ -1,0 +1,49 @@
+name: eval-lab CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run eval-lab (demo model, no API key) — expect PASS
+        id: baseline
+        uses: ./
+        with:
+          config: cli/examples/eval.config.baseline.json
+          model: demo
+          out: baseline.run.json
+
+      - name: Run eval-lab against a regressed prompt — expect FAIL
+        id: regressed
+        uses: ./
+        continue-on-error: true
+        with:
+          config: cli/examples/eval.config.regressed.json
+          model: demo
+          baseline: baseline.run.json
+          out: regressed.run.json
+
+      - name: Verify the regression run actually failed
+        run: |
+          if [ "${{ steps.regressed.outputs.passed }}" = "true" ]; then
+            echo "Expected the regressed prompt variant to fail CI, but it passed. Something is wrong with eval-lab's regression detection."
+            exit 1
+          fi
+          echo "Confirmed: eval-lab correctly failed CI on a real prompt regression (verbose reply exceeds max_words)."
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-lab-runs
+          path: |
+            baseline.run.json
+            regressed.run.json

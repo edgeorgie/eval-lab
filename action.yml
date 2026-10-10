@@ -34,6 +34,10 @@ inputs:
     description: "OpenAI API key. Only needed when model=openai."
     required: false
     default: ""
+  anthropic-workspace-id:
+    description: "Optional Anthropic workspace ID (anthropic-workspace-id header). Only needed if anthropic-api-key is an org-scoped key, not a workspace-scoped one."
+    required: false
+    default: ""
 
 outputs:
   passed:
@@ -66,6 +70,7 @@ runs:
         EVAL_LAB_OUT: ${{ inputs.out }}
         EVAL_LAB_FAIL_ON_REGRESSION: ${{ inputs.fail-on-regression }}
         EVAL_LAB_BASELINE: ${{ inputs.baseline }}
+        ANTHROPIC_WORKSPACE_ID: ${{ inputs.anthropic-workspace-id }}
       run: |
         set +e
         ARGS=(run --config "$EVAL_LAB_CONFIG" --model "$EVAL_LAB_MODEL" --out "$EVAL_LAB_OUT" --fail-on-regression "$EVAL_LAB_FAIL_ON_REGRESSION")

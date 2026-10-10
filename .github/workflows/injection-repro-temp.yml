@@ -1,0 +1,31 @@
+name: injection-repro (temporary)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  repro:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clear marker file (pre-flight)
+        run: rm -f /tmp/PWNED_live_test
+
+      - name: Run eval-lab with malicious config input
+        uses: ./
+        continue-on-error: true
+        with:
+          config: '$(touch /tmp/PWNED_live_test)'
+          model: demo
+          out: live-test-run.json
+
+      - name: Report whether injected command executed
+        run: |
+          if [ -f /tmp/PWNED_live_test ]; then
+            echo "VULNERABLE: /tmp/PWNED_live_test was created -> injected command executed"
+            exit 1
+          else
+            echo "SAFE: /tmp/PWNED_live_test was NOT created -> injected payload was not executed as shell code"
+          fi

@@ -61,11 +61,16 @@ runs:
       env:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+        EVAL_LAB_CONFIG: ${{ inputs.config }}
+        EVAL_LAB_MODEL: ${{ inputs.model }}
+        EVAL_LAB_OUT: ${{ inputs.out }}
+        EVAL_LAB_FAIL_ON_REGRESSION: ${{ inputs.fail-on-regression }}
+        EVAL_LAB_BASELINE: ${{ inputs.baseline }}
       run: |
         set +e
-        ARGS=(run --config "${{ inputs.config }}" --model "${{ inputs.model }}" --out "${{ inputs.out }}" --fail-on-regression "${{ inputs.fail-on-regression }}")
-        if [ -n "${{ inputs.baseline }}" ]; then
-          ARGS+=(--baseline "${{ inputs.baseline }}")
+        ARGS=(run --config "$EVAL_LAB_CONFIG" --model "$EVAL_LAB_MODEL" --out "$EVAL_LAB_OUT" --fail-on-regression "$EVAL_LAB_FAIL_ON_REGRESSION")
+        if [ -n "$EVAL_LAB_BASELINE" ]; then
+          ARGS+=(--baseline "$EVAL_LAB_BASELINE")
         fi
         npx --no-install eval-lab "${ARGS[@]}"
         code=$?

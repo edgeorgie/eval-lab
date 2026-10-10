@@ -9,12 +9,16 @@ export const PROVIDERS = {
 export async function complete(provider, apiKey, system, prompt, maxTokens = 900) {
   const model = PROVIDERS[provider].model;
   if (provider === "anthropic") {
+    const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "content-type": "application/json",
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
+        // Org-scoped keys (not scoped to a workspace) need this header or
+        // Anthropic returns a 400. Harmless to omit for workspace-scoped keys.
+        ...(workspaceId ? { "anthropic-workspace-id": workspaceId } : {}),
       },
       body: JSON.stringify({ model, max_tokens: maxTokens, system, messages: [{ role: "user", content: prompt }] }),
     });

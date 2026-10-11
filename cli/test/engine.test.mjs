@@ -59,3 +59,13 @@ test("execModel rejects when the command exits non-zero", async () => {
   const fn = execModel(`node -e "process.stdin.resume();process.exit(1)"`);
   await assert.rejects(fn(null, "x"));
 });
+
+test("execModel reports the exit code, not an EPIPE crash, when the command never reads stdin", async () => {
+  const fn = execModel("exit 3");
+  // The EPIPE race is timing dependent, so a single call can pass by luck; run many at once.
+  const settled = await Promise.allSettled(Array.from({ length: 25 }, () => fn(null, "x".repeat(100_000))));
+  for (const r of settled) {
+    assert.equal(r.status, "rejected");
+    assert.match(r.reason.message, /^exec model command exited 3: /);
+  }
+});

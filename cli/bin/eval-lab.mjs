@@ -28,6 +28,9 @@ export function execModel(command) {
         if (code !== 0) return reject(new Error(`exec model command exited ${code}: ${err.trim() || "(no stderr)"}`));
         resolve(out.trim());
       });
+      // A command that exits without reading stdin makes the write fail with EPIPE. The 'close'
+      // handler already reports the exit code, so the stream error must not crash the process.
+      child.stdin.on("error", () => {});
       child.stdin.write(JSON.stringify({ system: system ?? null, prompt }));
       child.stdin.end();
     });

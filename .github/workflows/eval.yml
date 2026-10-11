@@ -47,3 +47,20 @@ jobs:
           path: |
             baseline.run.json
             regressed.run.json
+
+  # The eval job drives the Action end to end but never runs the CLI's own unit tests, so a
+  # regression in cli/bin or cli/src would not turn CI red. The CLI has no dependencies, so no install.
+  cli-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run CLI unit tests
+        working-directory: cli
+        run: npm test

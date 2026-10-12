@@ -293,3 +293,6 @@ export default function Home() {
     </div>
   );
 }
+
+const __gate_probe: number = "this must fail the typecheck";
+export const __gate = __gate_probe;
